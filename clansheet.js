@@ -586,6 +586,11 @@ function ApplyClanFormatting() {
 
   sheet.setConditionalFormatRules(rules);
 
+  // Add mouseover notes for Column H (Last Activity) to show "days ago"
+  const activityValues = rangeH.getValues();
+  const activityNotes = activityValues.map(row => [calculateDaysAgo(row[0]) || ""]);
+  rangeH.setNotes(activityNotes);
+
   // Final UI Polish: Ensure only necessary columns are visible
   sheet.showColumns(1, 8);
   sheet.getRange(5, 3, lastRow - 4, 1).setNumberFormat("#,##0");
@@ -664,4 +669,25 @@ function calculateYYMMDD(dateStr) {
   }
   
   return `${years}y ${months}m ${days}d`;
+}
+
+/**
+ * Calculates how many days ago a date was from today.
+ */
+function calculateDaysAgo(dateStr) {
+  if (!dateStr || dateStr === "N/A" || dateStr === "Unknown" || dateStr === "") return null;
+  const activityDate = new Date(dateStr);
+  if (isNaN(activityDate.getTime())) return null;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  activityDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = today - activityDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return "Future date"; 
+  if (diffDays === 0) return "Active today";
+  if (diffDays === 1) return "1 day ago";
+  return `${diffDays} days ago`;
 }
