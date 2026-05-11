@@ -6,10 +6,19 @@ function onOpen() {
   ui.createMenu('RS Clan Sync')
       .addItem('Full Sync (All Stages)', 'RunFullSync')
       .addSeparator()
-      .addItem('Stage 1: Refresh Member List', 'Stage1_FetchRSList')
-      .addItem('Stage 2: Resolve Missing IDs', 'Stage2_ResolveIDs')
-      .addItem('Stage 3: Update Data', 'Stage3_FinalCombine')
-      .addItem('Stage 4: Apply Formatting', 'ApplyClanFormatting')
+      .addSubMenu(ui.createMenu('Stage Options')
+          .addItem('Stage 1: Refresh Member List', 'Stage1_FetchRSList')
+          .addItem('Stage 2: Resolve Missing IDs', 'Stage2_ResolveIDs')
+          .addItem('Stage 3: Update Data', 'Stage3_FinalCombine')
+          .addItem('Stage 4: Apply Formatting', 'ApplyClanFormatting'))
+      .addSeparator()
+      .addSubMenu(ui.createMenu('Sort Data')
+          .addItem('Sort by RSN (A-Z)', 'SortByRSN')
+          .addItem('Sort by Rank', 'SortByRank')
+          .addItem('Sort by Clan XP (High-Low)', 'SortByXP')
+          .addItem('Sort by Clan XP (Low-High)', 'SortByXPAsc')
+          .addItem('Sort by Last Activity (New-Old)', 'SortByActivity')
+          .addItem('Sort by Last Activity (Old-New)', 'SortByActivityAsc'))
       .addToUi();
   CreateScrollableLegend();
 }
@@ -690,4 +699,88 @@ function calculateDaysAgo(dateStr) {
   if (diffDays === 0) return "Active today";
   if (diffDays === 1) return "1 day ago";
   return `${diffDays} days ago`;
+}
+
+/**
+ * Generic Sort Helper
+ * @param {number} column - The column index (1-based)
+ * @param {boolean} ascending - True for A-Z/Low-High, False for Z-A/High-Low
+ */
+function _applySort(column, ascending) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getMasterSheet(ss);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 5) return;
+
+  // Sort range A5:H[LastRow]
+  const range = sheet.getRange(5, 1, lastRow - 4, 8);
+  range.sort({column: column, ascending: ascending});
+  ss.toast("Sort applied.");
+}
+
+/**
+ * Sorts by RSN (Column A) Ascending
+ */
+function SortByRSN() {
+  _applySort(1, true);
+}
+
+/**
+ * Sorts by Rank (Column B) Ascending
+ */
+function SortByRank() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getMasterSheet(ss);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 5) return;
+
+  // Define the standard RS rank hierarchy (highest to lowest)
+  const rankOrder = {
+    "Owner": 1, "Deputy Owner": 2, "Overseer": 3, "Coordinator": 4,
+    "Organiser": 5, "Admin": 6, "General": 7, "Captain": 8,
+    "Lieutenant": 9, "Sergeant": 10, "Corporal": 11, "Recruit": 12
+  };
+
+  const range = sheet.getRange(5, 1, lastRow - 4, 8);
+  const data = range.getValues();
+
+  // Sort the array in memory using the mapping (Column B is index 1)
+  data.sort((a, b) => {
+    const rankA = rankOrder[a[1]] || 99; 
+    const rankB = rankOrder[b[1]] || 99;
+    return rankA - rankB;
+  });
+
+  range.setValues(data);
+  ss.toast("Sorted by Rank Hierarchy (Owner -> Recruit).");
+}
+
+/**
+ * Sorts by Clan XP (Column C) Descending
+ */
+function SortByXP() {
+  _applySort(3, false);
+}
+
+/**
+ * Sorts by Clan XP (Column C) Ascending
+ */
+function SortByXPAsc() {
+  _applySort(3, true);
+}
+
+/**
+ * Sorts by Last Activity (Column H) Descending
+ */
+function SortByActivity() {
+  // Sorting dates: false (descending) puts newest dates at the top
+  _applySort(8, false);
+}
+
+/**
+ * Sorts by Last Activity (Column H) Ascending
+ */
+function SortByActivityAsc() {
+  // Sorting dates: true (ascending) puts oldest dates at the top
+  _applySort(8, true);
 }
