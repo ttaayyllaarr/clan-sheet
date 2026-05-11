@@ -11,7 +11,6 @@ This Google Apps Script automates the process of syncing RuneScape clan member d
 -   **Activity Heatmap**: Applies conditional formatting to visualize member activity levels (e.g., active today, 7d+ inactive, 14d+ inactive, 21d+ inactive).
 -   **Configurable Reset Times**: Allows customization of the clan's weekly reset day and time for accurate Citadel tracking.
 -   **Audit Mode**: Supports auditing past weeks' Citadel activity by setting a specific "Check Date".
--   **Dynamic UI**: Sets up a user-friendly interface with custom menus, headers, and column widths.
 -   **Error Handling**: Includes basic error handling and toast notifications for user feedback.
 
 ## How It Works
@@ -26,8 +25,8 @@ The script operates in four main stages, which can be run individually or as a "
 ## Setup
 
 1.  **Create a New Google Sheet**: Go to [Google Sheets](https://docs.google.com/spreadsheets/u/0/) and create a new blank spreadsheet.
-2.  **Open Apps Script Editor**: In the new Google Sheet, go to `Extensions > Apps Script`.
-3.  **Copy and Paste Code**: Delete any existing code in the `Code.gs` file (or create a new `.js` file if preferred) and paste the entire content of the provided `ep.js` file into the editor.
+2.  **Open Apps Script Editor**: In the new Google Sheet, go to `Extensions > Apps Script`. You may encounter issues here if you are signed in to more than one Google account.
+3.  **Copy and Paste Code**: Delete any existing code in the `Code.gs` file (or create a new `.js` file if preferred) and paste the entire content of the provided `clansheet.js` file into the editor.
 4.  **Save Project**: Click the save icon (floppy disk) or press `Ctrl + S` (Windows) / `Cmd + S` (Mac). You might be prompted to name your project; choose a descriptive name like "RuneScape Clan Sync".
 5.  **Authorize Script**: The first time you run any function from the script (e.g., `onOpen` or `RunFullSync`), Google will ask you to authorize it. Follow the prompts:
     *   Click "Review permissions".
