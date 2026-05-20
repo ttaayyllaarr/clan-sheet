@@ -63,6 +63,7 @@ Once set up, you can use the custom menu "RS Clan Sync" in your Google Sheet:
 -   **API Rate Limits**: Excessive calls to RunePixels APIs might lead to temporary blocking. The script attempts to be efficient but be mindful of frequent manual runs.
 -   **Clan Name Accuracy**: The clan name in cell `B1` must exactly match your clan's name in RuneScape.
 -   **Private RuneMetrics**: Players with private RuneMetrics profiles on RuneScape may have "N/A" for join dates or activity if RunePixels cannot access that data.
+-   **Free-to-Play Accounts**: Players who are no longer members may not show up on RunePixels.
 -   **Script Runtime**: Google Apps Script has a maximum execution time limit (typically 6 minutes). For very large clans, `Stage2_ResolveIDs` might need to be run multiple times if it times out.
 -   **Encoding**: The script attempts to handle special characters in RSNs, but very unusual characters might still cause issues.
 
