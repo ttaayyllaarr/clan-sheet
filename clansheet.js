@@ -10,7 +10,8 @@ function onOpen() {
           .addItem('Stage 1: Refresh Member List', 'Stage1_FetchRSList')
           .addItem('Stage 2: Resolve Missing IDs', 'Stage2_ResolveIDs')
           .addItem('Stage 3: Update Data', 'Stage3_FinalCombine')
-          .addItem('Stage 4: Apply Formatting', 'ApplyClanFormatting'))
+          .addItem('Stage 4: Apply Formatting', 'ApplyClanFormatting')
+          .addItem('Stage 5: Linkify RSNs', 'linkifyRSNs'))
       .addSeparator()
       .addSubMenu(ui.createMenu('Sort Data')
           .addItem('Sort by RSN (A-Z)', 'SortByRSN')
@@ -31,6 +32,7 @@ function RunFullSync() {
   Stage2_ResolveIDs(); 
   Stage3_FinalCombine();
   ApplyClanFormatting();
+  linkifyRSNs();
 }
 
 // --- STAGE 1: OFFICIAL RS LIST & RUNEPIXELS CACHE ---
@@ -272,7 +274,7 @@ function FormatRSNColumn() {
 
   // 2. Apply Custom Number Format: Text followed by two spaces
   // The "@" represents the text, and the spaces after it create the indent
-  rsnRange.setNumberFormat('@"  "');
+  rsnRange.setNumberFormat('@');
   
   ss.toast("RSN Column formatted with right-indent.");
 }
@@ -285,8 +287,8 @@ function Stage2_ResolveIDs() {
   const sheet = getMasterSheet(ss);
   const lastRow = sheet.getLastRow();
   ss.toast('Resolving RunePixels IDs, this step may take a few minutes.')
-  
   if (lastRow < 5) return;
+
   const range = sheet.getRange(5, 1, lastRow - 4, 4);
   const data = range.getValues();
   let count = 0;
@@ -319,7 +321,6 @@ function Stage3_FinalCombine() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = getMasterSheet(ss);
   const lastRow = sheet.getLastRow();
-  
   if (lastRow < 5) return;
 
   const clanName = sheet.getRange("B1").getValue().toString().trim();
@@ -456,7 +457,6 @@ function FormatCitadelColumn() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = getMasterSheet(ss);
   const lastRow = sheet.getLastRow();
-  
   if (lastRow < 5) return;
 
   const citadelRange = sheet.getRange(5, 5, lastRow - 4, 1);
@@ -699,6 +699,53 @@ function calculateDaysAgo(dateStr) {
   if (diffDays === 0) return "Active today";
   if (diffDays === 1) return "1 day ago";
   return `${diffDays} days ago`;
+}
+
+/**
+ * Converts RSNs in Column A to clickable RunePixels links with a 2-space right indent.
+ */
+/**
+ * Converts RSNs in Column A to clickable RunePixels links with a true 2-space right indent.
+ */
+function linkifyRSNs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getMasterSheet(ss); 
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 5) return;
+
+  const range = sheet.getRange(5, 1, lastRow - 4, 1);
+  const values = range.getValues();
+  const richTextValues = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const rawValue = values[i][0];
+    const rsn = rawValue ? rawValue.toString().trim() : "";
+    
+    if (rsn !== "") {
+      const urlFormattedName = encodeURIComponent(rsn.replace(/\s+/g, '-'));
+      const url = `https://runepixels.com/players/${urlFormattedName}`;
+      
+      // Combine the name and the trailing spaces
+      const combinedText = rsn + "  "; 
+      
+      // Build the rich text, but apply the link ONLY to the length of the RSN
+      const richText = SpreadsheetApp.newRichTextValue()
+        .setText(combinedText)
+        .setLinkUrl(0, rsn.length, url) // Highlights only the name, leaving the spaces clean
+        .build();
+        
+      richTextValues.push([richText]);
+    } else {
+      richTextValues.push([SpreadsheetApp.newRichTextValue().setText("").build()]);
+    }
+  }
+
+  try {
+    range.setRichTextValues(richTextValues);
+    ss.toast("RSNs successfully linkified with a true indent!");
+  } catch (err) {
+    console.error("Linkify failed: " + err.message);
+  }
 }
 
 /**
