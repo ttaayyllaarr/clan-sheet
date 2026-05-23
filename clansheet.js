@@ -762,6 +762,7 @@ function _applySort(column, ascending) {
   // Sort range A5:H[LastRow]
   const range = sheet.getRange(5, 1, lastRow - 4, 8);
   range.sort({column: column, ascending: ascending});
+  linkifyRSNs();
   ss.toast("Sort applied.");
 }
 
