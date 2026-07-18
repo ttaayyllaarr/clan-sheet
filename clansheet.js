@@ -115,7 +115,7 @@ function Stage1_FetchRSList() {
   // Clear existing data rows (A-H) to handle list shrinkage, preserving Row 1 Legend/Headers
   const lastRow = sheet.getLastRow();
   if (lastRow > 4) {
-    sheet.getRange(5, 1, lastRow - 4, 8).clearContent();
+    sheet.getRange(5, 1, lastRow - 4, 8).clear();
   }
   if (newData.length > 0) {
     sheet.getRange(5, 1, newData.length, 8).setValues(newData);
